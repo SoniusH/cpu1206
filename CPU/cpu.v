@@ -10,7 +10,7 @@ module cpu(
     wire [4:0] data_reg_waddr, data_reg_raddr1, data_reg_raddr2;
     wire [31:0] data_reg_wdata, data_reg_rdata1, data_reg_rdata2;
     // for pc regs
-    wire pc;
+    wire [9:0] pc;
     wire [31:0] inst_if_id_i, inst_if_id_o;
     // opcode, funct7, funct3
     // all signals that go between levels need 2 wires for reg
@@ -33,13 +33,16 @@ module cpu(
     // rd_data
     wire [31:0] rd_data_ex_mem_i, rd_data_ex_mem_o,
                 rd_data_mem_wb_i, rd_data_mem_wb_o;
+
     // The 32 Data Registers
-    reg32x32 u_data_reg(.clk(clk),.rst(rst),
-                        .we(data_reg_we),.waddr(data_reg_waddr),.wdata(data_reg_wdata),
-                        .re1(data_reg_re1),.raddr1(data_reg_raddr1),.rdata1(data_reg_rdata1),
-                        .re2(data_reg_re2),.raddr2(data_reg_raddr2),.rdata2(data_reg_rdata2));
+    reg32x32 data_reg(.clk(clk),.rst(rst),
+                      .we(data_reg_we),.waddr(data_reg_waddr),.wdata(data_reg_wdata),
+                      .re1(data_reg_re1),.raddr1(data_reg_raddr1),.rdata1(data_reg_rdata1),
+                      .re2(data_reg_re2),.raddr2(data_reg_raddr2),.rdata2(data_reg_rdata2));
+
     // Instruction Registers
-    reg [31:0] inst_reg [255:0];
+    inst_mem u_inst_mem(.clk(clk),.rst(rst),
+                      .re(1'b1),.raddr(pc[9:0]),.rdata(inst));
 
     // 5-levels and inter-level regs
     IF u_if();
@@ -63,25 +66,20 @@ module cpu(
             .rd_we_i(rd_we_id_ex_o), .rd_addr_i(rd_addr_id_ex_o),
             .rd_we(rd_we_ex_mem_i), .rd_addr(rd_addr_ex_mem_i), .rd_data(rd_data_ex_mem_i));
     
-    EX_ME u_ex_mem(.clk(clk),.rst(rst),
+    EX_MEM u_ex_mem(.clk(clk),.rst(rst),
                    .rd_we_i(rd_we_ex_mem_i), .rd_addr_i(rd_addr_ex_mem_i),.rd_data_i(rd_data_ex_mem_i)
                    .rd_we(rd_we_ex_mem_o), .rd_addr(rd_addr_ex_mem_o), .rd_data(rd_data_ex_mem_o));
     
-    ME u_mem(.rst(rst),
+    MEM u_mem(.rst(rst),
              .rd_we_i(rd_we_ex_mem_o), .rd_addr_i(rd_addr_ex_mem_o),.rd_data_i(rd_data_ex_mem_o)
              .rd_we(rd_we_mem_wb_i), .rd_addr(rd_addr_mem_wb_i), .rd_data(rd_data_mem_wb_i));
 
-    ME_WB u_mem_wb(.clk(clk),.rst(rst),
+    MEM_WB u_mem_wb(.clk(clk),.rst(rst),
                    .rd_we_i(rd_we_mem_wb_i), .rd_addr_i(rd_addr_mem_wb_i),.rd_data_i(rd_data_mem_wb_i)
                    .rd_we(rd_we_mem_wb_o), .rd_addr(rd_addr_mem_wb_o), .rd_data(rd_data_mem_wb_o));
 
     WB u_wb(.rst(rst),
             .rd_we_i(rd_we_mem_wb_o), .rd_addr_i(rd_addr_mem_wb_o),.rd_data_i(rd_data_mem_wb_o)
             .rd_we(data_reg_we), .rd_addr(data_reg_waddr), .rd_data(data_reg_wdata));
-
-    // inter-level regs
-
-    
-
 
 endmodule

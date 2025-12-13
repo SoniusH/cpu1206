@@ -1,8 +1,10 @@
 `timescale 1ns/1ps
-`include "defines.vh"
+`include "defines_op.vh"
 module EX(
     input wire rst,
 
+    input wire [15:0] pc_i, // temporily 16-bit in width,
+                            // may change later
     //input wire [2:0] type_i, // 6 types
     input wire [6:0] opcode_i,
     input wire [6:0] funct7_i,
@@ -29,6 +31,12 @@ module EX(
     // thus we can simplify 1 level of 'case'.
     always (*)begin 
         case(opcode_i)
+            OP_U_LUI: begin
+                rd_data = imm_i; //lui
+            end
+            OP_U_AUIPC: begin
+                rd_data = {16'b0,pc}+imm_i; //auipc
+            end
             OP_I_IMM: begin
                 case(funct3_i)
                     F3_ADD: rd_data = rs1_data_i + imm_i; //addi
@@ -93,6 +101,7 @@ module EX(
                 endcase
             end
             default:
+                rd_data = 32'b0;
         endcase
     end
 endmodule
