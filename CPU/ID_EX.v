@@ -1,8 +1,10 @@
 `timescale 1ns/1ps
+`include "defines_bitwidth.vh"
 module ID_EX(
     input wire clk,
     input wire rst,
 
+    input wire [`PC_WIDTH-1:0] pc_i, // temporily 10-bit in width,
     //input wire [2:0] type_i, // 6 types
     input wire [6:0] opcode_i,
     input wire [6:0] funct7_i,
@@ -19,6 +21,8 @@ module ID_EX(
 
     //output wire [2:0] type, // 6 types
     //output reg [3:0] op_sel,
+
+    output reg [`PC_WIDTH-1:0] pc,
     output reg [6:0] opcode,
     output reg [6:0] funct7,
     output reg [2:0] funct3,

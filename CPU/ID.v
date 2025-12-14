@@ -1,12 +1,13 @@
 `timescale 1ns/1ps
 `include "defines_op.vh"
+`include "defines_bitwidth.vh"
 module ID(
     //input wire clk,
     input wire rst,
-    input wire [15:0] pc_i, // temporily 16-bit in width,
+    input wire [`PC_WIDTH-1:0] pc_i, // temporily 10-bit in width,
                             // may change later
     input wire [31:0] id_inst, // id_instruction from inst_mem
-    output wire [15:0] pc, // to ex
+    output wire [`PC_WIDTH-1:0] pc, // to ex
     // Note: in RV32I there are only 11 opcodes,
     // should we use 4 bits only?
     output wire [6:0] opcode, // main operation code

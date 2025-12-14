@@ -1,9 +1,10 @@
 `timescale 1ns/1ps
 `include "defines_op.vh"
+`include "defines_bitwidth.vh"
 module EX(
     input wire rst,
 
-    input wire [15:0] pc_i, // temporily 16-bit in width,
+    input wire [`PC_WIDTH-1:0] pc_i, // temporily 10-bit in width,
                             // may change later
     //input wire [2:0] type_i, // 6 types
     input wire [6:0] opcode_i,

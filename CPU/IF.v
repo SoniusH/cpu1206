@@ -1,11 +1,12 @@
 `timescale 1ns/1ps
+`include "defines_bitwidth.vh"
 module IF (
     //input wire clk,
     input wire rst,
     //input wire branch,
     //input wire [31:0] branch_target,
     input wire [31:0] inst_i,
-    output reg [9:0] pc,
+    output reg [`PC_WIDTH-1:0] pc,
     output wire [31:0] inst
 );
 
