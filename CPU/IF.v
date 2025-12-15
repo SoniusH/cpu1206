@@ -1,4 +1,10 @@
 `timescale 1ns/1ps
+// plan: seperate IF stage into 3 modules:
+// 1. Instruction memory module (BRAM, simulate instruction memory)
+// 2. PC delay module (to match instruction timing in pipeline)
+// 3. PC generation module (to generate PC value)
+// and directly connect them to IF_ID register set.
+// therefore this module has been disabled.
 `include "defines_bitwidth.vh"
 module IF (
     //input wire clk,
