@@ -23,8 +23,8 @@ module cpu(
     wire [2:0] funct3_id_o, funct3_ex_i;
     // imm, rs1_data, rs2_data
     wire [31:0] imm_id_o, imm_ex_i,
-                rs1_data_id_o, rs1_data_ex_i,
-                rs2_data_id_o, rs2_data_ex_i;
+                rs1_data_id_i, rs1_data_id_o, rs1_data_ex_i,
+                rs2_data_id_i, rs2_data_id_o, rs2_data_ex_i;
     // rd_addr
     wire [4:0]  rd_addr_id_o, rd_addr_ex_i,
                 rd_addr_ex_o, rd_addr_mem_i, 
@@ -60,9 +60,19 @@ module cpu(
 
     ID u_id(.rst(rst),.id_inst(inst), .pc_i(pc_id_i), .pc(pc_id_o),
             .opcode(opcode_id_o),.funct7(funct7_id_o),.funct3(funct3_id_o), .imm(imm_id_o),
-            .rs1_re(data_reg_re1), .rs1_addr(data_reg_raddr1), .rs1_data_i(data_reg_rdata1),.rs1_data(rs1_data_id_o),
-            .rs2_re(data_reg_re2), .rs2_addr(data_reg_raddr2), .rs2_data_i(data_reg_rdata2),.rs2_data(rs2_data_id_o),
+            .rs1_re(data_reg_re1), .rs1_addr(data_reg_raddr1), .rs1_data_i(rs1_data_id_i),.rs1_data(rs1_data_id_o),
+            .rs2_re(data_reg_re2), .rs2_addr(data_reg_raddr2), .rs2_data_i(rs1_data_id_i),.rs2_data(rs2_data_id_o),
             .rd_we(rd_we_id_o), .rd_addr(rd_addr_id_o));
+    // rs1 and rs2 data is selected in fw4RAW_reg
+    // to solve RAW data hazard in reg case
+    fw4RAW_reg u_fw4RAW_reg(.rst(rst),
+                .rs1_re_id_i(data_reg_re1), .rs1_addr_id_i(data_reg_raddr1), rs1_data_from_reg_i(data_reg_rdata1),
+                .rs2_re_id_i(data_reg_re2), .rs2_addr_id_i(data_reg_raddr2), rs2_data_from_reg_i(data_reg_rdata2),
+                .rd_we_ex_i(rd_we_ex_i), .rd_addr_ex_i(rd_addr_ex_i), .rd_data_ex_i(rd_data_ex_o),
+                .rd_we_mem_i(rd_we_mem_i), .rd_addr_mem_i(rd_addr_mem_i), .rd_data_mem_i(rd_data_mem_i),
+                .rd_we_wb_i(rd_we_wb_i), .rd_addr_wb_i(rd_addr_wb_i), .rd_data_wb_i(rd_data_wb_i),
+                .rs1_data_id(rs1_data_id_i), .rs2_data_id(rs2_data_id_i)
+                );
 
     ID_EX u_id_ex(.clk(clk),.rst(rst), .pc_i(pc_id_o), .pc(pc_ex_i),
                   .opcode_i(opcode_id_o),.funct3_i(funct3_id_o),.funct7_i(funct7_id_o),
