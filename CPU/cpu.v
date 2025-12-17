@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-`include "defines_bitwidth.vh"
+`include "defines.vh"
 module cpu(
     input wire clk,
     input wire rst,

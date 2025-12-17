@@ -2,7 +2,7 @@
 // this module generates the program counter (PC) value
 // may be changed to support jump and branch instructions, 
 // as well as stalling and pipeline flushing later
-`include "defines_bitwidth.vh"
+`include "defines.vh"
 module pc_gen (
     input wire clk,
     input wire rst,

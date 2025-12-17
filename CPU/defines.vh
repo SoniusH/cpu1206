@@ -1,3 +1,9 @@
+/*********** Some Width for CPU ***********/
+`define PC_WIDTH 10
+`define DATA_WIDTH 32
+`define REG_ADDR_WIDTH 5
+/*********** For Opcodes Decoding ***********/
+// RV32I
 // opcodes
 `define OP_R 7'b0110011
 `define OP_I_LOAD 7'b0000011
@@ -22,3 +28,8 @@
 `define F3_AND 3'b111
 `define F3_SLT 3'b010
 `define F3_SLTU 3'b011
+/*********** For Multiplications and Multipliers ***********/
+`define MULT_PPL_STAGE 5 //multiplier pipeline stages
+`define MULT_MODULE_NAME_SxS mult_gen_0 //multiplier module name for signed x signed
+`define MULT_MODULE_NAME_SxU mult_gen_1 //multiplier module name for signed x unsigned
+`define MULT_MODULE_NAME_UxU mult_gen_2 //multiplier module name for unsigned x unsigned

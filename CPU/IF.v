@@ -4,8 +4,8 @@
 // 2. PC delay module (to match instruction timing in pipeline)
 // 3. PC generation module (to generate PC value)
 // and directly connect them to IF_ID register set.
-// therefore this module has been disabled.
-`include "defines_bitwidth.vh"
+// therefore this module has been abandoned.
+`include "defines.vh"
 module IF (
     //input wire clk,
     input wire rst,

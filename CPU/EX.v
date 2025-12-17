@@ -1,6 +1,5 @@
 `timescale 1ns/1ps
-`include "defines_op.vh"
-`include "defines_bitwidth.vh"
+`include "defines.vh"
 module EX(
     input wire rst,
 

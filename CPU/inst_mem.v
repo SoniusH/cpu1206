@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-`include "defines_bitwidth.vh"
+`include "defines.vh"
 module inst_mem (
     input wire clka,
 //    input wire we,

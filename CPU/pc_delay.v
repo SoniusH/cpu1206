@@ -30,7 +30,7 @@
             ----------------------------------------
 
 */
-`include "defines_bitwidth.vh"
+`include "defines.vh"
 module pc_delay (
     input wire clk,
     input wire rst,
