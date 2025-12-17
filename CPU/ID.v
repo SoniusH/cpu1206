@@ -19,18 +19,18 @@ module ID(
 
     output wire [31:0] imm, // **put out: immediate value, to ex
     // rs1
-    output wire rs1_re, // connected to reg read enable 1
-    output wire [5:0] rs1_addr, //connected to reg read address 1
+    output wire rs1_re, // connected to reg read enable 1 and stall ctrl
+    output wire [4:0] rs1_addr, //connected to reg read address 1 and stall ctrl
     input wire [31:0] rs1_data_i,// from reg read data 1
     output wire [31:0] rs1_data,// **put out: to ex rs1 data
     // rs2
-    output wire rs2_re, // connected to reg read enable 2
-    output wire [5:0] rs2_addr,// connected to reg read address 2
+    output wire rs2_re, // connected to reg read enable 2 and stall ctrl
+    output wire [4:0] rs2_addr,// connected to reg read address 2 and stall ctrl
     input wire [31:0] rs2_data_i,// from reg read data 2
     output wire [31:0] rs2_data,// **put out: to ex rs2 data
     // rd
-    output wire rd_we, // connected forward to WB
-    output wire [4:0] rd_addr // connected forward to WB
+    output wire rd_we, // connected forward to WB and stall ctrl
+    output wire [4:0] rd_addr // connected forward to WB and stall ctrl
     
 );
     localparam TYPE_R = 3'd0,
