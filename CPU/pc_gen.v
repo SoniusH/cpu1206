@@ -15,7 +15,7 @@ module pc_gen (
         //end else if (branch) begin
             //pc <= branch_target; // Update PC to branch target
         end else begin
-            pc <= pc + 1; // Increment PC by 1 for next instruction
+            pc <= pc + 4; // Increment PC by 4 for next instruction
         end
     end
 endmodule

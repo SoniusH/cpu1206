@@ -1,6 +1,8 @@
 `timescale 1ns/1ps
 /*
-    This module introduces a delay of 2 clock cycles to the PC signal,
+    *** As MDR can be cancelled, we only need 1 more set of registers. ***
+
+    This module introduces a delay of 1 ~~2~~ clock cycles to the PC signal,
     to make PC match the instruction.
     Otherwise, the PC value would mismatch the instruction 
     in following stages.
@@ -37,6 +39,14 @@ module pc_delay (
     input wire [`PC_WIDTH-1:0] pc_i,
     output reg [`PC_WIDTH-1:0] pc_o
 );
+    always @(posedge clk) begin
+        if(rst)begin
+            pc_o <= {`PC_WIDTH{1'b0}};
+        end else begin
+            pc_o <= pc_i;
+        end
+    end
+    /*
     reg [`PC_WIDTH-1:0] pc_mid;
 
     // First DFF_set    
@@ -56,5 +66,5 @@ module pc_delay (
             pc_o <= pc_mid;
         end
     end
-
+    */
 endmodule

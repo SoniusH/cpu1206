@@ -35,7 +35,7 @@ module EX(
                 rd_data = imm_i; //lui
             end
             OP_U_AUIPC: begin
-                rd_data = {16'b0,pc}+imm_i; //auipc
+                rd_data = {{(32-`PC_WIDTH){1'b0}},pc}+imm_i; //auipc
             end
             OP_I_IMM: begin
                 case(funct3_i)
