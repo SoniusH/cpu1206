@@ -4,6 +4,10 @@ module ID_EX(
     input wire clk,
     input wire rst,
 
+    // stall and flush
+    input stall,
+    input flush,
+
     input wire [`PC_WIDTH-1:0] pc_i, // temporily 10-bit in width,
     //input wire [2:0] type_i, // 6 types
     input wire [6:0] opcode_i,

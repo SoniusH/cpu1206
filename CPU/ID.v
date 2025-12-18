@@ -85,7 +85,9 @@ module ID(
                 imm = {20'b0,inst[31:20]};
             end//I lb,lh,lw,lhu,lwu
             OP_S:begin
-
+                rs1_re = 1'b1;
+                rs2_re = 1'b1;
+                imm = {20'b0, inst[31:25], inst[11:7]};
             end//S sb,sh,sw
             OP_I_IMM:begin
                 rs1_re = 1'b1;
