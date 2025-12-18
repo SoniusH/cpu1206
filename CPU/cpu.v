@@ -38,6 +38,12 @@ module cpu(
     wire [31:0] rd_data_ex_o, rd_data_mem_i,
                 rd_data_mem_o, rd_data_wb_i;
 
+    // for mult_manager
+    wire use_mult_ex_o;
+    wire [1:0] mult_type_ex_o;
+    wire [4:0] rd_addrs_mult_o [`MULT_PPL_STAGE-1:0];
+    wire [31:0] rd_data_mult_o;
+    wire [`MULT_PPL_STAGE-1:0] mult_uses_o;
     // The 32 Data Registers
     reg32x32 data_reg(.clk(clk),.rst(rst),
                       .we(data_reg_we),.waddr(data_reg_waddr),.wdata(data_reg_wdata),
@@ -86,8 +92,23 @@ module cpu(
             .opcode_i(opcode_ex_i), .funct7_i(funct7_ex_i), .funct3_i(funct3_ex_i),
             .imm_i(imm_ex_i), .rs1_data_i(rs1_data_ex_i),.rs2_data_i(rs2_data_ex_i),
             .rd_we_i(rd_we_ex_i), .rd_addr_i(rd_addr_ex_i),
-            .rd_we(rd_we_ex_o), .rd_addr(rd_addr_ex_o), .rd_data(rd_data_ex_o));
-    
+            .rd_we(rd_we_ex_o), .rd_addr(rd_addr_ex_o), .rd_data(rd_data_ex_o),
+            .use_mult(use_mult_ex_o), .mult_type(mult_type_ex_o)
+            );
+    mult_manager u_mult_manager(.clk(clk),.rst(rst),
+                .A(rs1_data_ex_i),.B(rs2_data_ex_i),
+                .use_i(use_mult_ex_o),.mult_type_i(mult_type_ex_o),.rd_addr_i(rd_addr_ex_i),
+                .rd_addrs(rd_addrs_mult_o),.mult_uses(mult_uses_o),.rd_data(rd_data_mult_o));
+                
+    stall_ctrl_mult u_stall_ctrl_mult(
+                .clk(clk), .rst(rst),
+                .rd_addrs_mult_i(rd_addrs_mult_o),.mult_uses_i(mult_uses_o),
+                .rs1_re_id_i(data_reg_re1),.rs1_addr_id_i(data_reg_raddr1),
+                .rs2_re_id_i(data_reg_re2),.rs2_addr_id_i(data_reg_raddr2),
+                .rd_we_id_i(rd_we_id_o),.rd_addr_id_i(rd_addr_id_o),
+                // outputs to stall ctrl
+                .stall_req_o()
+                );
     EX_MEM u_ex_mem(.clk(clk),.rst(rst),
                     .rd_we_i(rd_we_ex_o), .rd_addr_i(rd_addr_ex_o),.rd_data_i(rd_data_ex_o)
                     .rd_we(rd_we_mem_i), .rd_addr(rd_addr_mem_i), .rd_data(rd_data_mem_i));

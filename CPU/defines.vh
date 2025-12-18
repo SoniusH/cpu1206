@@ -28,8 +28,30 @@
 `define F3_AND 3'b111
 `define F3_SLT 3'b010
 `define F3_SLTU 3'b011
+// funct3 when OP_R in RV32M
+`define F3_MUL  3'b000
+`define F3_MULH 3'b001
+`define F3_MULHSU 3'b010
+`define F3_MULHU 3'b011
+`define F3_DIV  3'b100
+`define F3_DIVU 3'b101
+`define F3_REM  3'b110
+`define F3_REMU 3'b111
+// funct3 when OP_I_LOAD or OP_S
+`define F3_LB  3'b000
+`define F3_LH  3'b001
+`define F3_LW  3'b010
+`define F3_LBU 3'b100
+`define F3_LHU 3'b101
+`define F3_SB  3'b000
+`define F3_SH  3'b001
+`define F3_SW  3'b010
 /*********** For Multiplications and Multipliers ***********/
 `define MULT_PPL_STAGE 5 //multiplier pipeline stages
 `define MULT_MODULE_NAME_SxS mult_gen_0 //multiplier module name for signed x signed
 `define MULT_MODULE_NAME_SxU mult_gen_1 //multiplier module name for signed x unsigned
 `define MULT_MODULE_NAME_UxU mult_gen_2 //multiplier module name for unsigned x unsigned
+`define MULT_TYPE_LOW32 2'b00 //multiplier type: low 32 bits
+`define MULT_TYPE_SxS_HIGH32 2'b01 //multiplier type: signed x signed, high 32 bits
+`define MULT_TYPE_SxU_HIGH32 2'b10 //multiplier type: signed x unsigned, high 32 bits
+`define MULT_TYPE_UxU_HIGH32 2'b11 //multiplier type: unsigned x unsigned, high 32 bits

@@ -7,6 +7,10 @@ module reg32x32 (
     input wire [4:0] waddr,
     input wire [31:0] wdata,
 
+    input wire we_mult_div,
+    input wire [4:0] waddr_mult_div,
+    input wire [31:0] wdata_mult_div,
+
     input wire re1,
     input wire [4:0] raddr1,
     output wire [31:0] rdata1,
@@ -23,8 +27,13 @@ module reg32x32 (
             for (integer i = 0; i < 32; i = i + 1) begin
                 regfile[i] <= 32'b0;
             end
-        end else if (we) begin //TODO: force x0 = 0
-            regfile[waddr] <= wdata;
+        end else begin //TODO: force x0 = 0
+            // priority to mult/div write is to avoid write conflict
+            if (we) begin
+                regfile[waddr] <= wdata;
+            end else if (we_mult_div) begin
+                regfile[waddr_mult_div] <= wdata_mult_div;
+            end
         end
     end
     // Read operations

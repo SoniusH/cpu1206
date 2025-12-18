@@ -8,13 +8,15 @@ module mult_manager(
     input wire rst,
     // inputs
     // multiplier operands
+    // connected directly from ID/EX rs1 and rs2 data outputs
     input wire [31:0] A,
     input wire [31:0] B,
     // multiplier type
-    input wire [1:0] mult_type, //00: Low32, 01: SxS High32, 10: SxU High32, 11: UxU High32
     input wire use_i, // whether to use the multiplier
+    input wire [1:0] mult_type_i, //00: Low32, 01: SxS High32, 10: SxU High32, 11: UxU High32
     // destination register address
     // if 0, the instruction is ignored
+    // connected directly from ID/EX rd_addr output
     input wire [4:0] rd_addr_i, 
                     
     // outputs
@@ -23,9 +25,9 @@ module mult_manager(
                             //for upper 32 bits of result
     output reg [4:0] rd_addrs [`MULT_PPL_STAGE-1:0] // destination reg addrs in pipeline
                             // can be used in stall_ctrl_mult to check data hazard
-    output wire [`MULT_PPL_STAGE-1:0] uses // multiplier uses signal
+    output wire [`MULT_PPL_STAGE-1:0] mult_uses // multiplier uses signal
     // as our multipliers are pipelined, we can have multiple instructions in the pipeline
-    // the multi-bit uses signal indicates which stage is uses
+    // the multi-bit mult_uses signal indicates which stage is used
     // thus simplifying the stall control logic
 );
     // pipeline registers
@@ -42,7 +44,7 @@ module mult_manager(
     // used when consecutive instructions use the same operands
     // reg [31:0] rd_data_HI_LO;
     // reg [1:0] rd_data_op_flag; // 2'b00: LO SxS, 2'b01: HI SxS, 2'b10: HI SxU, 2'b11: HI UxU
-    // assign operands based on mult_type
+    // assign operands based on mult_type_i
     // instantiate multipliers
     `MULT_MODULE_NAME_SxS u_mult_sxs(
         .clk(clk), .en(en_SxS),
@@ -57,12 +59,12 @@ module mult_manager(
         .A(A_UxU), .B(B_UxU), .P(P_UxU)
     );
     // input operand selection
-    assign A_SxS = {32{use_i}}&{32{~mult_type[1]}}&$signed(A);//(mult_type==2'b00 || mult_type==2'b01)? $signed(A) : 32'b0;
-    assign B_SxS = {32{use_i}}&{32{~mult_type[1]}}&$signed(B);//(mult_type==2'b00 || mult_type==2'b01)? $signed(B) : 32'b0;
-    assign A_SxU = {32{use_i}}&{32{(mult_type==2'b10)}}&$signed(A);//(mult_type==2'b10)? $signed(A) : 32'b0;
-    assign B_SxU = {32{use_i}}&{32{(mult_type==2'b10)}}&$signed(B);//(mult_type==2'b10)? B : 32'b0;
-    assign A_UxU = {32{use_i}}&{32{(mult_type==2'b11)}}&A;//(mult_type==2'b11)? A : 32'b0;
-    assign B_UxU = {32{use_i}}&{32{(mult_type==2'b11)}}&B;//(mult_type==2'b11)? B : 32'b0;
+    assign A_SxS = {32{use_i}}&{32{~mult_type_i[1]}}&$signed(A);//(mult_type_i==2'b00 || mult_type_i==2'b01)? $signed(A) : 32'b0;
+    assign B_SxS = {32{use_i}}&{32{~mult_type_i[1]}}&$signed(B);//(mult_type_i==2'b00 || mult_type_i==2'b01)? $signed(B) : 32'b0;
+    assign A_SxU = {32{use_i}}&{32{(mult_type_i==2'b10)}}&$signed(A);//(mult_type_i==2'b10)? $signed(A) : 32'b0;
+    assign B_SxU = {32{use_i}}&{32{(mult_type_i==2'b10)}}&$signed(B);//(mult_type_i==2'b10)? B : 32'b0;
+    assign A_UxU = {32{use_i}}&{32{(mult_type_i==2'b11)}}&A;//(mult_type_i==2'b11)? A : 32'b0;
+    assign B_UxU = {32{use_i}}&{32{(mult_type_i==2'b11)}}&B;//(mult_type_i==2'b11)? B : 32'b0;
     // output result selection
     assign rd_data = mult_type_reg[`MULT_PPL_STAGE-1][1] ?
                      (mult_type_reg[`MULT_PPL_STAGE-1][0]? P_UxU[63:32] : P_SxU[63:32]) :
@@ -74,24 +76,24 @@ module mult_manager(
                      (mult_type_reg[`MULT_PPL_STAGE-1]==2'b11)? P_UxU[63:32] :
                      32'b0;
     */
-    // pipeline reg for rd_addrs and mult_type
+    // pipeline reg for rd_addrs and mult_type_i
     integer i;
     always @(posedge clk) begin
         if (rst) begin
             for (i = 0; i < `MULT_PPL_STAGE; i = i + 1) begin
                 rd_addrs[i] <= 5'b0;
                 mult_type_reg[i] <= 2'b0;
-                uses[i] <= 1'b0;
+                mult_uses[i] <= 1'b0;
             end
         end else begin
             rd_addrs[0] <= {5{use_i}}&rd_addr_i; //use_i ? rd_addr_i : 5'b0;
-            mult_type_reg[0] <= mult_type;
-            uses[0] <= use_i;
+            mult_type_reg[0] <= mult_type_i;
+            mult_uses[0] <= use_i;
             // shift pipeline registers
             for (i = 1; i < `MULT_PPL_STAGE; i = i + 1) begin
                 rd_addrs[i] <= rd_addrs[i-1];
                 mult_type_reg[i] <= mult_type_reg[i-1];
-                uses[i] <= uses[i-1];
+                mult_uses[i] <= mult_uses[i-1];
             end
         end
     end
