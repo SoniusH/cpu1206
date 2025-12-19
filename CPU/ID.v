@@ -5,7 +5,7 @@ module ID(
     input wire rst,
     input wire [`PC_WIDTH-1:0] pc_i, // temporily 10-bit in width,
                             // may change later
-    input wire [31:0] id_inst, // id_instruction from inst_mem
+    input wire [31:0] inst, // instruction from inst_mem
     output wire [`PC_WIDTH-1:0] pc, // to ex
     // Note: in RV32I there are only 11 opcodes,
     // should we use 4 bits only?
@@ -45,12 +45,12 @@ module ID(
     // reg funct3_en, funct7_en;
 
     assign pc = pc_i;
-    assign opcode = id_inst[6:0];
-    assign funct3 = id_inst[14:12];
-    assign funct7 = id_inst[31:25];
-    assign rs1_addr = {5{rs1_re}}&id_inst[24:20];//rs1_re ? id_inst[24:20] : 5'b0;
-    assign rs2_addr = {5{rs2_re}}&id_inst[19:15];//rs2_re ? id_inst[19:15] : 5'b0;
-    assign rd_addr = {5{rd_we}}&id_inst[11:7];//rd_we ? id_inst[11:7] : 5'b0;
+    assign opcode = inst[6:0];
+    assign funct3 = inst[14:12];
+    assign funct7 = inst[31:25];
+    assign rs1_addr = {5{rs1_re}}&inst[24:20];//rs1_re ? inst[24:20] : 5'b0;
+    assign rs2_addr = {5{rs2_re}}&inst[19:15];//rs2_re ? inst[19:15] : 5'b0;
+    assign rd_addr = {5{rd_we}}&inst[11:7];//rd_we ? inst[11:7] : 5'b0;
     assign rs1_data = rs1_data_i;
     assign rs2_data = rs2_data_i;
 
@@ -62,34 +62,34 @@ module ID(
         rd_we = 1'b0;
         imm = 32'b0;
         case(opcode)
-            OP_U_LUI:begin
-                imm = {id_inst[31:12], 12'b0};
+            `OP_U_LUI:begin
+                imm = {inst[31:12], 12'b0};
                 rd_we = 1'b1;
             end//U lui
-            OP_U_AUIPC:begin
-                imm = {id_inst[31:12], 12'b0};
+            `OP_U_AUIPC:begin
+                imm = {inst[31:12], 12'b0};
                 rd_we = 1'b1;
             end//U auipc
-            OP_J_JAL:begin
+            `OP_J_JAL:begin
 
             end//J jal
-            OP_J_JALR:begin
+            `OP_J_JALR:begin
 
             end//J jalr
-            OP_B:begin
+            `OP_B:begin
 
             end//B beq,bne,blt,bge,bltu,bgeu
-            OP_I_LOAD:begin
+            `OP_I_LOAD:begin
                 rs1_re = 1'b1;
                 rd_we = 1'b1;
                 imm = {20'b0,inst[31:20]};
             end//I lb,lh,lw,lhu,lwu
-            OP_S:begin
+            `OP_S:begin
                 rs1_re = 1'b1;
                 rs2_re = 1'b1;
                 imm = {20'b0, inst[31:25], inst[11:7]};
             end//S sb,sh,sw
-            OP_I_IMM:begin
+            `OP_I_IMM:begin
                 rs1_re = 1'b1;
                 rd_we = 1'b1;
                 if(funct3==3'b001 || funct3==3'b101)begin
@@ -98,15 +98,15 @@ module ID(
                     imm = {20'b0,inst[31:20]};
                 end
             end//I addi,ori,xori,andi,slti,sltiu,slli,srli,srai
-            OP_R:begin
+            `OP_R:begin
                 rs1_re = 1'b1;
-                rs2_re  1'b1;
+                rs2_re = 1'b1;
                 rd_we = 1'b1;
             end//R
-            OP_I_FENCE:begin
+            `OP_I_FENCE:begin
 
             end//I fence,fence.i
-            OP_I_CSR:begin
+            `OP_I_CSR:begin
 
             end//I ...
             default:begin

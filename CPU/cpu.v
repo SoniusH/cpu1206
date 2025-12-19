@@ -64,7 +64,7 @@ module cpu(
                   .if_pc(pc_delayed),.if_inst(inst),
                   .id_pc(pc_id_i),.id_inst(inst_id_i));
 
-    ID u_id(.rst(rst),.id_inst(inst), .pc_i(pc_id_i), .pc(pc_id_o),
+    ID u_id(.rst(rst),.inst(inst), .pc_i(pc_id_i), .pc(pc_id_o),
             .opcode(opcode_id_o),.funct7(funct7_id_o),.funct3(funct3_id_o), .imm(imm_id_o),
             .rs1_re(data_reg_re1), .rs1_addr(data_reg_raddr1), .rs1_data_i(rs1_data_id_i),.rs1_data(rs1_data_id_o),
             .rs2_re(data_reg_re2), .rs2_addr(data_reg_raddr2), .rs2_data_i(rs1_data_id_i),.rs2_data(rs2_data_id_o),
