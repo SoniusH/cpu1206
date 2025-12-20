@@ -31,7 +31,6 @@ module ID(
     // rd
     output wire rd_we, // connected forward to WB and stall ctrl
     output wire [4:0] rd_addr // connected forward to WB and stall ctrl
-    
 );
     localparam TYPE_R = 3'd0,
                TYPE_I = 3'd1,
@@ -39,7 +38,6 @@ module ID(
                TYPE_B = 3'd3,
                TYPE_U = 3'd4,
                TYPE_J = 3'd5;
-    
     // as in EX we have another opcode-decoding process,
     // is it necessary to have funct3_en and funct7_en here?
     // reg funct3_en, funct7_en;
@@ -71,13 +69,18 @@ module ID(
                 rd_we = 1'b1;
             end//U auipc
             `OP_J_JAL:begin
-
+                imm = {{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
+                rd_we = 1'b1;
             end//J jal
             `OP_J_JALR:begin
-
+                imm = {{20{inst[31]}}, inst[31:20]};
+                rs1_re = 1'b1;
+                rd_we = 1'b1;
             end//J jalr
             `OP_B:begin
-
+                imm = {{19{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8], 1'b0};
+                rs1_re = 1'b1;
+                rs2_re = 1'b1;
             end//B beq,bne,blt,bge,bltu,bgeu
             `OP_I_LOAD:begin
                 rs1_re = 1'b1;

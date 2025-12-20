@@ -53,7 +53,21 @@ module ID_EX(
             rs1_data <= 32'b0;
             rs2_data <= 32'b0;
             rd_addr <= 5'b0;
-        end else begin
+            rd_we <= 1'b0 ;
+        end 
+        else if (flush)
+        begin
+            opcode <= OP_I_IMM;
+            funct7 <= 7'b0 ;
+            funct3 <= `F3_ADD ;
+            imm <= 32'b0 ;
+            rs1_data <= 32'b0;
+            rs2_data <= 32'b0;
+            rd_addr <= 5'b0 ;
+            rd_we <= 1'b0 ;
+        end
+        else
+        begin
             //op_sel <= op_sel_i;
             opcode <= opcode_i;
             funct7 <= funct7_i;
@@ -62,6 +76,7 @@ module ID_EX(
             rs1_data <= rs1_data_i;
             rs2_data <= rs2_data_i;
             rd_addr <= rd_addr_i;
+            rd_we <= rd_we_i ;
         end
     end
 
