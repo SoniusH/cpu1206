@@ -47,6 +47,13 @@
 `define F3_SB  3'b000
 `define F3_SH  3'b001
 `define F3_SW  3'b010
+// funct3 when OP_B
+`define F3_BEQ 3'b000
+`define F3_BNE 3'b001 
+`define F3_BLT 3'b100
+`define F3_BGE 3'b101
+`define F3_BLTU 3'b110
+`define F3_BGEU 3'b111
 /*********** For Multiplications and Multipliers ***********/
 `define MULT_PPL_STAGE 5 //multiplier pipeline stages
 `define MULT_MODULE_NAME_SxS mult_gen_0 //multiplier module name for signed x signed

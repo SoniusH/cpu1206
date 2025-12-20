@@ -32,12 +32,22 @@ module EX(
     output reg [`MEM_ADDR_WIDTH-1:0] ram_wr_addr,
     output reg [31:0] ram_w_data,
     output reg [3:0] ram_wr_mask,
-    output reg ram_r_sign_ext //signal extend or not
+    output reg ram_r_sign_ext ,//signal extend or not
     //output reg [`MEM_ADDR_WIDTH-1:0] ram_r_addr,
     //output reg [3:0] ram_r_mask
+
+    output reg pc_jump ,
+    output reg [`PC_WIDTH-1:0] pc_target
 );
     assign rd_we = rd_we_i;
     assign rd_addr = rd_addr_i;
+
+    //B-type and J-type 
+    reg branch_taken;  // 分支是否跳转
+    reg [`PC_WIDTH-1:0] return_addr;
+
+    // 返回地址计算（对于JAL/JALR）
+    assign return_addr = pc_i + 32'h4;
 
     // we assume that all instructions obey the format,
    // // therefore in OP_I_IMM and OP_R the funct7 can only have 2 possible values: 
@@ -45,7 +55,7 @@ module EX(
     // thus we can simplify 1 level of 'case'.
     //********************* ALU **********************
     // U_LUI, U_AUIPC, I_IMM, R
-    always (*)begin 
+    always @(*)begin 
         case(opcode_i)
             `OP_U_LUI: begin
                 rd_data = imm_i; //lui
@@ -115,13 +125,35 @@ module EX(
                     `F3_AND: rd_data = rs1_data_i & rs2_data_i; //and
                 endcase end
             end
+            `OP_J_JAL:begin
+                rd_data = return_addr
+                pc_target = pc_i + imm_i ;
+                pc_jump = 1'b1 ;
+            end
+            `OP_J_JALR:begin
+                rd_data = return_addr ;
+                pc_target = { (rs1_data_i + imm_i)[31:1], 1'b0 };
+                pc_jump = 1'b1;   
+            end
+            `OP_B:begin
+                pc_target = pc_i + imm_i<<1;
+                case(funct3_i)
+                    `F3_BEQ:  branch_taken = (rs1_data_i == rs2_data_i);      // beq
+                    `F3_BNE:  branch_taken = (rs1_data_i != rs2_data_i);      // bne
+                    `F3_BGE:  branch_taken = ($signed(rs1_data_i) >= $signed(rs2_data_i)); // bge
+                    `F3_BLTU: branch_taken = (rs1_data_i < rs2_data_i);       // bltu
+                    `F3_BGEU: branch_taken = (rs1_data_i >= rs2_data_i);      // bgeu
+                    default : branch_taken =  1'b0 ;
+                endcase
+                pc_jump = branch_taken;
+            end
             default:
                 rd_data = 32'b0;
         endcase
     end
     //********** Multiplication and Division ***********
     // RV32M
-    always (*)begin 
+    always @(*)begin 
         use_mult = 1'b0;
         mult_type = 2'b00;
         if(opcode_i == `OP_R && funct7_i[0]) begin case(funct3_i) //RV32M
@@ -149,7 +181,7 @@ module EX(
     end
     //********************* MEM **********************
     // I_LOAD, S
-    always (*)begin 
+    always @(*)begin 
         ram_we = 1'b0;
         ram_re = 1'b0;
         ram_wr_addr = `MEM_ADDR_WIDTH'b0;

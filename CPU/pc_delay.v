@@ -36,13 +36,19 @@
 module pc_delay (
     input wire clk,
     input wire rst,
+    input wire pc_jump,
     input wire [`PC_WIDTH-1:0] pc_i,
+    input wire [`PC_WIDTH-1:0] pc_target,
     output reg [`PC_WIDTH-1:0] pc_o
 );
     always @(posedge clk) begin
         if(rst)begin
             pc_o <= {`PC_WIDTH{1'b0}};
-        end else begin
+        end
+        else if (pc_jump)begin 
+           pc_o = pc_target ; 
+        end
+        else begin
             pc_o <= pc_i;
         end
     end

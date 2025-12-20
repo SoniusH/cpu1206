@@ -6,15 +6,17 @@
 module pc_gen (
     input wire clk,
     input wire rst,
-    //input wire [`PC_WIDTH-1:0] branch_target,
+    input wire pc_jump , 
+    input wire [`PC_WIDTH-1:0] pc_target,
     output reg [`PC_WIDTH-1:0] pc
 );
     always @(posedge clk) begin
         if (rst) begin
             pc <= {`PC_WIDTH{1'b0}}; // Reset PC to 0
-        //end else if (branch) begin
-            //pc <= branch_target; // Update PC to branch target
-        end else begin
+        end else if (pc_jump) begin
+            pc <= pc_target + 3'b100; // Update PC to branch target
+        end 
+        else begin
             pc <= pc + 4; // Increment PC by 4 for next instruction
         end
     end

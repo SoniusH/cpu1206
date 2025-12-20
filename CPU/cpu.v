@@ -38,6 +38,11 @@ module cpu(
     wire [31:0] rd_data_ex_o, rd_data_mem_i,
                 rd_data_mem_o, rd_data_wb_i;
 
+    //pc_jump
+    wire pc_jump;
+    wire [`PC_WIDTH-1:0] pc_target
+    wire [3:0] flush_ctrl;
+
     // for mult_manager
     wire use_mult_ex_o;
     wire [1:0] mult_type_ex_o;
@@ -49,7 +54,7 @@ module cpu(
                       .we(data_reg_we),.waddr(data_reg_waddr),.wdata(data_reg_wdata),
                       .re1(data_reg_re1),.raddr1(data_reg_raddr1),.rdata1(data_reg_rdata1),
                       .re2(data_reg_re2),.raddr2(data_reg_raddr2),.rdata2(data_reg_rdata2));
-
+         
     // Instruction Registers
     // re temporily set to 1'b1
     // may be changed to BRAM later
@@ -58,9 +63,10 @@ module cpu(
 
     // 5-levels and inter-level regs
     //IF u_if();
-    pc_gen u_pc_gen(.clk(clk), .rst(rst), .pc(pc));
-    pc_delay u_pc_delay(.clk(clk),.rst(rst),.pc_i(pc),.pc_o(pc_delayed));
-    IF_ID u_if_id(.clk(clk),.rst(rst),
+    pc_gen u_pc_gen(.clk(clk), .rst(rst),.pc_jump(pc_jump),.pc_target(pc_target), .pc(pc));
+    pc_delay u_pc_delay(.clk(clk),.rst(rst),.pc_jump(pc_jump),.pc_target(pc_target),
+                        .pc_i(pc),.pc_o(pc_delayed));
+    IF_ID u_if_id(.clk(clk),.rst(rst),.flush(pc_jump)
                   .if_pc(pc_delayed),.if_inst(inst),
                   .id_pc(pc_id_i),.id_inst(inst_id_i));
 
@@ -80,7 +86,7 @@ module cpu(
                 .rs1_data_id(rs1_data_id_i), .rs2_data_id(rs2_data_id_i)
                 );
 
-    ID_EX u_id_ex(.clk(clk),.rst(rst), .pc_i(pc_id_o), .pc(pc_ex_i),
+    ID_EX u_id_ex(.clk(clk),.rst(rst),.flush(pc_jump) .pc_i(pc_id_o), .pc(pc_ex_i),
                   .opcode_i(opcode_id_o),.funct3_i(funct3_id_o),.funct7_i(funct7_id_o),
                   .imm_i(imm_id_o),.rs1_data_i(rs1_data_id_o),.rs2_data_i(rs2_data_id_o),
                   .rd_we_i(rd_we_id_o), .rd_addr_i(rd_addr_id_o),
@@ -93,7 +99,8 @@ module cpu(
             .imm_i(imm_ex_i), .rs1_data_i(rs1_data_ex_i),.rs2_data_i(rs2_data_ex_i),
             .rd_we_i(rd_we_ex_i), .rd_addr_i(rd_addr_ex_i),
             .rd_we(rd_we_ex_o), .rd_addr(rd_addr_ex_o), .rd_data(rd_data_ex_o),
-            .use_mult(use_mult_ex_o), .mult_type(mult_type_ex_o)
+            .use_mult(use_mult_ex_o), .mult_type(mult_type_ex_o),.pc_jump(pc_jump),
+            .pc_target(pc_target)
             );
     mult_manager u_mult_manager(.clk(clk),.rst(rst),
                 .A(rs1_data_ex_i),.B(rs2_data_ex_i),
