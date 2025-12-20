@@ -61,7 +61,7 @@
 /*********** For Divisions and Dividers ***********/
 `define DIV_PPL_STAGE 36 //divider pipeline stages
 `define DIV_MODULE_NAME div_gen_0 //divider module name
-`define DIV_TYPE_SIGNED 1'b0 //divider type: signed
-`define DIV_TYPE_UNSIGNED 1'b1 //divider type: unsigned
+`define DIV_TYPE_SIGNED 1'b1 //divider type: signed
+`define DIV_TYPE_UNSIGNED 1'b0 //divider type: unsigned
 `define DIV_TYPE_QUOTIENT 1'b0 //divider type: quotient
 `define DIV_TYPE_REMAINDER 1'b1 //divider type: remainder
