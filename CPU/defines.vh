@@ -52,7 +52,16 @@
 `define MULT_MODULE_NAME_SxS mult_gen_0 //multiplier module name for signed x signed
 `define MULT_MODULE_NAME_SxU mult_gen_1 //multiplier module name for signed x unsigned
 `define MULT_MODULE_NAME_UxU mult_gen_2 //multiplier module name for unsigned x unsigned
+`define MULT_MODULE_NAME_33x33 mult_gen_3 //multiplier module name for 33bit, 
+                            //which can implement all the 3 kinds of multiplication.
 `define MULT_TYPE_LOW32 2'b00 //multiplier type: low 32 bits
 `define MULT_TYPE_SxS_HIGH32 2'b01 //multiplier type: signed x signed, high 32 bits
 `define MULT_TYPE_SxU_HIGH32 2'b10 //multiplier type: signed x unsigned, high 32 bits
 `define MULT_TYPE_UxU_HIGH32 2'b11 //multiplier type: unsigned x unsigned, high 32 bits
+/*********** For Divisions and Dividers ***********/
+`define DIV_PPL_STAGE 36 //divider pipeline stages
+`define DIV_MODULE_NAME div_gen_0 //divider module name
+`define DIV_TYPE_SIGNED 1'b0 //divider type: signed
+`define DIV_TYPE_UNSIGNED 1'b1 //divider type: unsigned
+`define DIV_TYPE_QUOTIENT 1'b0 //divider type: quotient
+`define DIV_TYPE_REMAINDER 1'b1 //divider type: remainder
