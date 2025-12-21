@@ -3,7 +3,8 @@
 module cpu(
     input wire clk,
     input wire rst,
-    input wire [31:0] inst
+    input wire [31:0] inst,
+    input wire work_ena
 );
     // wires
     // for data regs
@@ -19,6 +20,7 @@ module cpu(
     // opcode, funct7, funct3
     // all signals that go between levels need 2 wires for reg
     wire [6:0] opcode_id_o, opcode_ex_i;
+    wire [6:0] opcode_ex_o, opcode_mem_i;
     wire [6:0] funct7_id_o, funct7_ex_i;
     wire [2:0] funct3_id_o, funct3_ex_i;
     // imm, rs1_data, rs2_data
@@ -38,11 +40,11 @@ module cpu(
     wire [31:0] rd_data_ex_o, rd_data_mem_i,
                 rd_data_mem_o, rd_data_wb_i;
 
-    //pc_jump
+    //pc_jump and stall
     wire pc_jump;
     wire [`PC_WIDTH-1:0] pc_target
     wire [3:0] flush_ctrl;
-
+    wire stall ;
     // for mult_manager
     wire use_mult_ex_o;
     wire [1:0] mult_type_ex_o;
@@ -63,10 +65,14 @@ module cpu(
 
     // 5-levels and inter-level regs
     //IF u_if();
-    pc_gen u_pc_gen(.clk(clk), .rst(rst),.pc_jump(pc_jump),.pc_target(pc_target), .pc(pc));
+    pc_gen u_pc_gen(.clk(clk), .rst(rst),.pc_jump(pc_jump),
+                        .work_ena(work_ena),.stall(stall)
+                        .pc_target(pc_target), .pc(pc));
     pc_delay u_pc_delay(.clk(clk),.rst(rst),.pc_jump(pc_jump),.pc_target(pc_target),
+                        .work_ena(work_ena),.stall(stall)
                         .pc_i(pc),.pc_o(pc_delayed));
     IF_ID u_if_id(.clk(clk),.rst(rst),.flush(pc_jump)
+                  .work_ena(work_ena),.stall(stall)
                   .if_pc(pc_delayed),.if_inst(inst),
                   .id_pc(pc_id_i),.id_inst(inst_id_i));
 
@@ -100,7 +106,7 @@ module cpu(
             .rd_we_i(rd_we_ex_i), .rd_addr_i(rd_addr_ex_i),
             .rd_we(rd_we_ex_o), .rd_addr(rd_addr_ex_o), .rd_data(rd_data_ex_o),
             .use_mult(use_mult_ex_o), .mult_type(mult_type_ex_o),.pc_jump(pc_jump),
-            .pc_target(pc_target)
+            .pc_target(pc_target),.opcode_ex_o(opcode_ex_o)
             );
     mult_manager u_mult_manager(.clk(clk),.rst(rst),
                 .A(rs1_data_ex_i),.B(rs2_data_ex_i),
@@ -114,15 +120,15 @@ module cpu(
                 .rs2_re_id_i(data_reg_re2),.rs2_addr_id_i(data_reg_raddr2),
                 .rd_we_id_i(rd_we_id_o),.rd_addr_id_i(rd_addr_id_o),
                 // outputs to stall ctrl
-                .stall_req_o()
+                .stall_req_o(stall)
                 );
-    EX_MEM u_ex_mem(.clk(clk),.rst(rst),
+    EX_MEM u_ex_mem(.clk(clk),.rst(rst),.opcode_ex_o(opcode_ex_o),.opcode_mem_i(opcode_mem_i),
                     .rd_we_i(rd_we_ex_o), .rd_addr_i(rd_addr_ex_o),.rd_data_i(rd_data_ex_o)
                     .rd_we(rd_we_mem_i), .rd_addr(rd_addr_mem_i), .rd_data(rd_data_mem_i));
     
-    MEM u_mem(.rst(rst),
+    MEM u_mem(.rst(rst),.aluop_i(opcode_mem_i),
               .rd_we_i(rd_we_mem_i), .rd_addr_i(rd_addr_mem_i),.rd_data_i(rd_data_mem_i)
-              .rd_we(rd_we_mem_o), .rd_addr(rd_addr_mem_o), .rd_data(rd_data_mem_o));
+              .rd_we(rd_we_mem_o), .rd_addr(rd_addr_mem_o), .rd_data(rd_data_mem_o),);
 
     MEM_WB u_mem_wb(.clk(clk),.rst(rst),
                    .rd_we_i(rd_we_mem_o), .rd_addr_i(rd_addr_mem_o),.rd_data_i(rd_data_mem_o)

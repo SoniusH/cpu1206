@@ -2,6 +2,9 @@
 module EX_MEM(
     input wire clk,
     input wire rst,
+
+    input wire [6:0] opcode_ex_o ,
+    output reg [6:0] opcode_mem_i ,
     // rd
     input wire rd_we_i,
     input wire [4:0] rd_addr_i,
@@ -16,10 +19,12 @@ module EX_MEM(
             rd_we <= 1'b0;
             rd_addr <= 5'b0;
             rd_data <= 32'b0;
+            opcode_mem_i <= 7'b0;
         end else begin
             rd_we <= rd_we_i;
             rd_addr <= rd_addr_i;
             rd_data <= rd_data_i;
+            opcode_mem_i <= opcode_ex_o ;
         end
     end
 endmodule

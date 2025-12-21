@@ -37,6 +37,8 @@ module pc_delay (
     input wire clk,
     input wire rst,
     input wire pc_jump,
+    input wire work_ena,
+    input wire stall,
     input wire [`PC_WIDTH-1:0] pc_i,
     input wire [`PC_WIDTH-1:0] pc_target,
     output reg [`PC_WIDTH-1:0] pc_o
@@ -45,6 +47,8 @@ module pc_delay (
         if(rst)begin
             pc_o <= {`PC_WIDTH{1'b0}};
         end
+        else if (!work_ena)
+            pc <= `PC_WIDTH'd0 ;
         else if (pc_jump)begin 
            pc_o = pc_target ; 
         end
