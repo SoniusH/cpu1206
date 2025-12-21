@@ -29,6 +29,9 @@ module EX(
 
     // ram read and write
     // address and mask are shared, controlled by we and re.
+    // as ram_re == 1 <=> opcode is I_LOAD,
+    // and ram_we == 1 <=> opcode is S,
+    // we can use this pair of signals to represent the cases of opcode == I_LOAD or S.
     output reg ram_we,
     output reg ram_re,
     output reg [`MEM_ADDR_WIDTH-1:0] ram_wr_addr,
