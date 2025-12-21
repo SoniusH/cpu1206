@@ -11,7 +11,7 @@
 `define OP_I_IMM  7'b0010011
 `define OP_I_FENCE 7'b1110011
 `define OP_I_CSR 7'b1110011
-`define OP_S 7'b0100011
+`define OP_S 7'b0100111
 `define OP_B 7'b1100011
 `define OP_J_JAL 7'b1101111
 `define OP_J_JALR 7'b1100111

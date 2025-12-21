@@ -93,7 +93,8 @@ module div_manager(
     always @(*) begin
         rd_addr_flags = 32'b0;
         for (i = 0; i < `MULT_PPL_STAGE; i = i + 1) begin
-            rd_addr_flags[rd_addr_regs[i]] = div_uses[i];
+            rd_addr_flags[rd _addr_regs[i]] = div_uses[i];
         end
+        rd_addr_flags[rd_addr_i] = use_i;
     end
 endmodule

@@ -93,5 +93,6 @@ module mult_manager(
         for (i = 0; i < `MULT_PPL_STAGE; i = i + 1) begin
             rd_addr_flags[rd_addr_regs[i]] = mult_uses[i];
         end
+        rd_addr_flags[rd_addr_i] = use_i;
     end
 endmodule

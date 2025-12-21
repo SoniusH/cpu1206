@@ -55,7 +55,7 @@ module ID_EX(
             rd_addr <= 5'b0;
             rd_we <= 1'b0 ;
         end 
-        else if (flush)
+        else if (flush | stall )
         begin
             opcode <= OP_I_IMM;
             funct7 <= 7'b0 ;

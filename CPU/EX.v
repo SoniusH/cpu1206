@@ -18,6 +18,8 @@ module EX(
     // rd
     input wire rd_we_i,
     input wire [4:0] rd_addr_i,
+
+    output wire [6:0] opcode_ex_o,
     output wire rd_we,
     output wire [4:0] rd_addr,
     output reg [31:0] rd_data,
@@ -41,7 +43,7 @@ module EX(
 );
     assign rd_we = rd_we_i;
     assign rd_addr = rd_addr_i;
-
+    assign opcode_ex_o = opcode_i ;
     //B-type and J-type 
     reg branch_taken;  // 分支是否跳转
     reg [`PC_WIDTH-1:0] return_addr;
@@ -140,6 +142,7 @@ module EX(
                 case(funct3_i)
                     `F3_BEQ:  branch_taken = (rs1_data_i == rs2_data_i);      // beq
                     `F3_BNE:  branch_taken = (rs1_data_i != rs2_data_i);      // bne
+                    `F3_BLT:  branch_taken = ($signed(rs1_data_i) < $signed(rs2_data_i));  //BLT
                     `F3_BGE:  branch_taken = ($signed(rs1_data_i) >= $signed(rs2_data_i)); // bge
                     `F3_BLTU: branch_taken = (rs1_data_i < rs2_data_i);       // bltu
                     `F3_BGEU: branch_taken = (rs1_data_i >= rs2_data_i);      // bgeu
