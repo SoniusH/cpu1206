@@ -16,7 +16,7 @@ module div_manager(
     input wire [31:0] divisor,
     // divider type
     input wire div_sign_i, //signed or unsigned division
-    input wire div_result_type_i, //put out quotient or remainder
+    input wire div_result_i, //put out quotient or remainder
     // whether to use the divider
     input wire use_i,
     // destination register address
@@ -25,17 +25,21 @@ module div_manager(
     input wire [4:0] rd_addr_i, 
                     
     // outputs
-    output wire rd_we,
-    output reg [4:0] rd_addr,// destination reg addr
+    output wire [4:0] rd_addr,// destination reg addr
     output wire [31:0] rd_data, // divider result
-    //output wire busy,
-    output wire finish
-    //output reg [31:0] rd_addr_flags // can be used in stall_ctrl_div to check data hazard
+    output reg [31:0] rd_addr_flags // can be used in stall_ctrl_div to check data hazard
+
+    // as our dividers are pipelined, we can have multiple instructions in the pipeline
+    // the multi-bit div_uses signal indicates which stage is used
+    // thus simplifying the stall control logic(by used in rd_addr_flags generation)
 );
     /**************** wires and regs *******************/
     // pipeline registers
-    reg [`DIV_PPL_STAGE_LOG2-1:0] counter;
-    reg div_result_type_reg;
+    reg [4:0] rd_addr_regs [`MULT_PPL_STAGE-1:0]; // destination reg addrs in pipeline
+    //reg div_sign_regs [`MULT_PPL_STAGE-1:0];
+    reg div_result_regs [`MULT_PPL_STAGE-1:0];
+
+    reg div_uses [`MULT_PPL_STAGE-1:0];
 
     wire dividend_33, divisor_33, quotient_33, remainder_33;
     wire [31:0] dividend_act, divisor_act; // operands actually used, for in some cases there's no div.
@@ -59,35 +63,30 @@ module div_manager(
     );
 
     // output result selection
-    assign rd_data = (div_result_type_reg==DIV_TYPE_QUOTIENT) ? quotient : remainder;
+    assign rd_data = (div_result_regs[`MULT_PPL_STAGE-1]==DIV_TYPE_QUOTIENT) ? quotient : remainder;
+    /****************** pipeline registers *******************/
+    // pipeline reg for rd_addr_regs and div_type_i
+    integer i;
     always @(posedge clk) begin
         if (rst) begin
-            counter <= 0;
+            for (i = 0; i < `MULT_PPL_STAGE; i = i + 1) begin
+                rd_addr_regs[i] <= 5'b0;
+                div_result_regs[i] <= 1'b0;
+                div_uses[i] <= 1'b0;
+            end
         end else begin
-            if (use_i && counter == 0) begin
-                counter <= `DIV_PPL_STAGE;
-            end else if (counter != 0) begin
-                counter <= counter - 1;
+            rd_addr_regs[0] <= {5{use_i}}&rd_addr_i; //use_i ? rd_addr_i : 5'b0;
+            div_result_regs[0] <= div_result_i;
+            div_uses[0] <= use_i;
+            // shift pipeline registers
+            for (i = 1; i < `MULT_PPL_STAGE; i = i + 1) begin
+                rd_addr_regs[i] <= rd_addr_regs[i-1];
+                div_result_regs[i] <= div_result_regs[i-1];
+                div_uses[i] <= div_uses[i-1];
             end
         end
     end
-    assign finish = (counter == 1) ? 1'b1 : 1'b0;
-    assign rd_we = finish;
-    //assign busy = (counter != 0) ? 1'b1 : 1'b0;
-    always @(posedge clk) begin
-        if (rst) begin
-            rd_addr <= 5'b0;
-            div_result_type_reg <= DIV_TYPE_QUOTIENT;
-        end else begin
-            if(use_i && rd_addr == 5'b0) begin
-                rd_addr <= rd_addr_i;
-                div_result_type_reg <= div_result_type_i;
-            end else if (finish) begin
-                rd_addr <= 5'b0;
-                div_result_type_reg <= DIV_TYPE_QUOTIENT;
-            end
-        end
-    end
+    assign rd_addr = rd_addr_regs[`MULT_PPL_STAGE-1];
     /****************** rd_addr_flags generation *******************/
     // generate rd_addr_flags
     always @(*) begin
