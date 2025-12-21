@@ -53,7 +53,7 @@ module pc_delay (
            pc_o = pc_target ; 
         end
         else if (stall)
-            pc_o <= pc_i ; 
+            pc_o <= pc_o ; 
         else begin
             pc_o <= pc_i;
         end
