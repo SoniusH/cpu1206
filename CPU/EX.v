@@ -140,6 +140,7 @@ module EX(
                 case(funct3_i)
                     `F3_BEQ:  branch_taken = (rs1_data_i == rs2_data_i);      // beq
                     `F3_BNE:  branch_taken = (rs1_data_i != rs2_data_i);      // bne
+                    `F3_BLT:  branch_taken = ($signed(rs1_data_i) < $signed(rs2_data_i));  //BLT
                     `F3_BGE:  branch_taken = ($signed(rs1_data_i) >= $signed(rs2_data_i)); // bge
                     `F3_BLTU: branch_taken = (rs1_data_i < rs2_data_i);       // bltu
                     `F3_BGEU: branch_taken = (rs1_data_i >= rs2_data_i);      // bgeu
