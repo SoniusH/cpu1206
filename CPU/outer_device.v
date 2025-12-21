@@ -42,4 +42,5 @@ module outer_device (
         
     seg_display display (.clk(clk), .data(display_data),
         .dot_seg(set_dot), .seg_an(seg_an), .seg_seg(seg_seg));
+    
 endmodule

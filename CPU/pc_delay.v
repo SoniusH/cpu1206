@@ -48,10 +48,12 @@ module pc_delay (
             pc_o <= {`PC_WIDTH{1'b0}};
         end
         else if (!work_ena)
-            pc <= `PC_WIDTH'd0 ;
+            pc_o <= `PC_WIDTH'd0 ;
         else if (pc_jump)begin 
            pc_o = pc_target ; 
         end
+        else if (stall)
+            pc_o <= pc_i ; 
         else begin
             pc_o <= pc_i;
         end
