@@ -57,7 +57,7 @@ module ID_EX(
         end 
         else if (flush | stall )
         begin
-            opcode <= OP_I_IMM;
+            opcode <= `OP_I_IMM;
             funct7 <= 7'b0 ;
             funct3 <= `F3_ADD ;
             imm <= 32'b0 ;

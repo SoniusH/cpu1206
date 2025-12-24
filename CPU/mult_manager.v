@@ -23,8 +23,9 @@ module mult_manager(
     output wire rd_data, // multiplier result
     //output wire rd_data_2, // used in the case of 2 consecutive instructions of the same operands, 
                             //for upper 32 bits of result
+    output wire rd_we,
     output wire [4:0] rd_addr,// destination reg addr
-    output reg [31:0] rd_addr_flags,
+    output reg [31:0] rd_addr_flags
                             // can be used in stall_ctrl_mult to check data hazard
     //output wire [`MULT_PPL_STAGE-1:0] mult_uses // multiplier uses signal
     // as our multipliers are pipelined, we can have multiple instructions in the pipeline
@@ -42,11 +43,11 @@ module mult_manager(
     wire [65:64] P_66_65;
     wire [31:0] A_act, B_act; // operands actually used, for in some cases there's no mult.
     wire [63:0] P_out;
-    wire en_33x33;
+    //wire en_33x33;
     /***************** multiplication processing *******************/
     // temporarily 1'b1, 
     // as when disabled the multiplication in the pipeline cannot be finished
-    assign en_33x33 = 1'b1;
+    //assign en_33x33 = 1'b1;
     // use the 33rd bit for sign extension, based on mult_type_i
     assign A_33 = use_i & (mult_type_i != 2'b11) & A[31];
     assign B_33 = use_i & (~mult_type_i[1]) & B[31];//use_i & ((mult_type_i==2'b00 || mult_type_i==2'b01)) & B[31];
@@ -57,9 +58,9 @@ module mult_manager(
     // instantiate multiplier
     // we use one 33x33 multiplier to cover all cases
     `MULT_MODULE_NAME_33x33 u_mult_33x33(
-        .clk(clk), .en(en_33x33),
+        .CLK(clk), //.en(en_33x33),
         .A({A_33,A_act}), .B({B_33,B_act}), .P({P_66_65,P_out})
-    )
+    );
     // output result selection
     assign rd_data = (mult_type_regs[`MULT_PPL_STAGE-1]==2'b00)? P_out[31:0] : P_out[63:32];
     /****************** pipeline updating *******************/

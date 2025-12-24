@@ -3,14 +3,18 @@ module reg32x32 (
     input wire clk,
     input wire rst,
 
-    input wire we,
-    input wire [4:0] waddr,
-    input wire [31:0] wdata,
+    input wire we1,
+    input wire [4:0] waddr1,
+    input wire [31:0] wdata1,
 
-    input wire we_mult_div,
-    input wire [4:0] waddr_mult_div,
-    input wire [31:0] wdata_mult_div,
-
+    input wire we2,
+    input wire [4:0] waddr2,
+    input wire [31:0] wdata2,
+    /*
+    input wire we3,
+    input wire [4:0] waddr3,
+    input wire [31:0] wdata3,
+*/
     input wire re1,
     input wire [4:0] raddr1,
     output wire [31:0] rdata1,
@@ -20,19 +24,30 @@ module reg32x32 (
     output wire [31:0] rdata2
 );
     reg [31:0] regfile [31:0];
-
+    wire [31:0] wflag1,wflag2;//,wflag3;
+    decoder5_32 u1(.in5(waddr1),.out32(wflag1));
+    decoder5_32 u2(.in5(waddr2),.out32(wflag2));
+    //decoder5_32 u3(.in5(waddr3),.out32(wflag3));
+    integer i;
+    initial begin // only used for simulation, not synthesizable.
+        for(i = 0; i < 32; i = i + 1)begin
+            regfile[i] = i;
+        end
+    end
     // Write operation
+    
     always @(posedge clk) begin
         if (rst) begin
-            for (integer i = 0; i < 32; i = i + 1) begin
+            for (i = 0; i < 32; i = i + 1) begin
                 regfile[i] <= 32'b0;
             end
         end else begin //TODO: force x0 = 0
             // priority to mult/div write is to avoid write conflict
-            if (we) begin
-                regfile[waddr] <= wdata;
-            end else if (we_mult_div) begin
-                regfile[waddr_mult_div] <= wdata_mult_div;
+            for (i = 0; i < 32; i = i + 1)begin
+                regfile[i] <= (wflag1[i] & we1) ? wdata1 :
+                              (wflag2[i] & we2) ? wdata2 :
+                              //(wflag3[i] & we3) ? wdata3 :
+                              regfile[i];
             end
         end
     end

@@ -38,7 +38,7 @@ module fw4RAW_reg(
 
     // back to ID stage
     output wire [31:0] rs1_data_id,
-    output wire [31:0] rs2_data_id,
+    output wire [31:0] rs2_data_id
 );
     // MUX connected with priority
     assign rs1_data_id = rst ? 32'b0 :

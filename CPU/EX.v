@@ -3,9 +3,7 @@
 module EX(
     input wire rst,
 
-    input wire [`PC_WIDTH-1:0] pc_i, // temporily 10-bit in width,
-                            // may change later
-    //input wire [2:0] type_i, // 6 types
+    input wire [`PC_WIDTH-1:0] pc_i, 
     input wire [6:0] opcode_i,
     input wire [6:0] funct7_i,
     input wire [2:0] funct3_i,
@@ -48,10 +46,12 @@ module EX(
     assign rd_addr = rd_addr_i;
     assign opcode_ex_o = opcode_i ;
     //B-type and J-type 
-    reg branch_taken;  // åˆ†æ”¯æ˜¯å¦è·³è½¬
-    reg [`PC_WIDTH-1:0] return_addr;
-
-    // è¿”å›žåœ°å€è®¡ç®—ï¼ˆå¯¹äºŽJAL/JALRï¼‰
+    reg branch_taken;  // ·ÖÖ§ÊÇ·ñÌø×ª
+    wire [`PC_WIDTH-1:0] return_addr;
+    
+    wire [31:0] rs1_data_plus_imm;
+    assign rs1_data_plus_imm = rs1_data_i + imm_i;
+    // ·µ»ØµØÖ·¼ÆËã£¨¶ÔÓÚJAL/JALR£©
     assign return_addr = pc_i + 32'h4;
 
     // we assume that all instructions obey the format,
@@ -66,7 +66,7 @@ module EX(
                 rd_data = imm_i; //lui
             end
             `OP_U_AUIPC: begin
-                rd_data = {{(32-`PC_WIDTH){1'b0}},pc}+imm_i; //auipc
+                rd_data = {{(32-`PC_WIDTH){1'b0}},pc_i}+imm_i; //auipc
             end
             `OP_I_IMM: begin case(funct3_i)
                 `F3_ADD: rd_data = rs1_data_i + imm_i; //addi
@@ -76,9 +76,9 @@ module EX(
                 `F3_XOR: rd_data = rs1_data_i ^ imm_i; //xori
                 `F3_SR: begin//srli or srai
                     if(funct7_i[5])begin
-                        rd_data = rs1_data_i >>> imm_i[4:0]//srai
+                        rd_data = rs1_data_i >>> imm_i[4:0];//srai
                     end else begin
-                        rd_data = rs1_data_i >> imm_i[4:0]//srli
+                        rd_data = rs1_data_i >> imm_i[4:0];//srli
                     end
                     /*
                     case(funct7_i)
@@ -114,9 +114,9 @@ module EX(
                     `F3_XOR: rd_data = rs1_data_i ^ rs2_data_i; //xor
                     `F3_SR: begin//srl or sra
                         if(funct7_i[5])begin
-                            rd_data = rs1_data_i >>> rs2_data_i[4:0]//sra
+                            rd_data = rs1_data_i >>> rs2_data_i[4:0];//sra
                         end else begin
-                            rd_data = rs1_data_i >> rs2_data_i[4:0]//srl
+                            rd_data = rs1_data_i >> rs2_data_i[4:0];//srl
                         end
                         /*
                         case(funct7_i)
@@ -131,13 +131,13 @@ module EX(
                 endcase end
             end
             `OP_J_JAL:begin
-                rd_data = return_addr
+                rd_data = return_addr;
                 pc_target = pc_i + imm_i ;
                 pc_jump = 1'b1 ;
             end
             `OP_J_JALR:begin
                 rd_data = return_addr ;
-                pc_target = { (rs1_data_i + imm_i)[31:1], 1'b0 };
+                pc_target = { rs1_data_plus_imm[31:1], 1'b0 };
                 pc_jump = 1'b1;   
             end
             `OP_B:begin
@@ -200,14 +200,14 @@ module EX(
                 // BRAM addr add 1 is 4 Bytes.
                 // Therefore here divided by 4.
                 //(rs1_data_i + imm_i)[`MEM_ADDR_WIDTH-1:0] >> 2;
-                ram_wr_addr = (rs1_data_i + imm_i)[`MEM_ADDR_WIDTH+1:2];
+                ram_wr_addr = rs1_data_plus_imm[`MEM_ADDR_WIDTH+1:2];
                 case(funct3_i)
                     `F3_SW:begin
                         ram_wr_mask = 4'b1111;
                         // little endian
                         ram_w_data = {rs2_data_i[7:0],rs2_data_i[15:8],rs2_data_i[23:16],rs2_data_i[31:24]};
                     end
-                    `F3_SH:begin case((rs1_data_i + imm_i)[1:0])
+                    `F3_SH:begin case(rs1_data_plus_imm[1:0])
                         2'b00:begin
                             ram_wr_mask = 4'b1100;
                             ram_w_data = {rs2_data_i[7:0],rs2_data_i[15:8],16'b0};
@@ -218,7 +218,7 @@ module EX(
                         end
                         // no need for default. we have set the values at the beginning.
                     endcase end
-                    `F3_SB:begin case((rs1_data_i + imm_i)[1:0])
+                    `F3_SB:begin case(rs1_data_plus_imm[1:0])
                         2'b00:begin
                             ram_wr_mask = 4'b1000;
                             ram_w_data = {rs2_data_i[7:0],23'b0};
@@ -241,14 +241,14 @@ module EX(
             end
             `OP_I_LOAD: begin 
                 ram_re = 1'b1;
-                ram_wr_addr = (rs1_data_i + imm_i)[`MEM_ADDR_WIDTH+1:2]
+                ram_wr_addr = rs1_data_plus_imm[`MEM_ADDR_WIDTH+1:2];
                 case(funct3_i)
                     `F3_LW:begin
                         ram_wr_mask = 4'b1111;
                     end
                     `F3_LH:begin 
                         ram_r_sign_ext = 1'b1;
-                        case((rs1_data_i + imm_i)[1:0])
+                        case(rs1_data_plus_imm[1:0])
                             2'b00:begin
                                 ram_wr_mask = 4'b1100;
                             end
@@ -260,7 +260,7 @@ module EX(
                     end
                     `F3_LB:begin 
                         ram_r_sign_ext = 1'b1;
-                        case((rs1_data_i + imm_i)[1:0])
+                        case(rs1_data_plus_imm[1:0])
                             2'b00:begin
                                 ram_wr_mask = 4'b1000;
                             end
@@ -276,7 +276,7 @@ module EX(
                         endcase 
                     end
                     `F3_LHU:begin
-                        case((rs1_data_i + imm_i)[1:0])
+                        case(rs1_data_plus_imm[1:0])
                             2'b00:begin
                                 ram_wr_mask = 4'b1100;
                             end
@@ -287,7 +287,7 @@ module EX(
                         endcase 
                     end
                     `F3_LBU: begin
-                        case((rs1_data_i + imm_i)[1:0])
+                        case(rs1_data_plus_imm[1:0])
                             2'b00:begin
                                 ram_wr_mask = 4'b1000;
                             end

@@ -8,8 +8,8 @@ module IF_ID(
     input wire work_ena,
     input wire [`PC_WIDTH-1:0]if_pc,
     input wire [31:0] if_inst,
-    output wire [`PC_WIDTH-1:0]id_pc,
-    output wire [31:0] id_inst
+    output reg [`PC_WIDTH-1:0]id_pc,
+    output reg [31:0] id_inst
 );
     always @(posedge clk) begin
         if(rst)begin

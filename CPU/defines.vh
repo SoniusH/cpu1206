@@ -1,8 +1,13 @@
-/*********** Some Width for CPU ***********/
+/*********** Some Width Settings for CPU ***********/
 `define PC_WIDTH 10
-`define MEM_ADDR_WIDTH 10
+`define MEM_ADDR_WIDTH 12
 `define DATA_WIDTH 32
 `define REG_ADDR_WIDTH 5
+/*********** MEM Module Names **********/
+`define INST_MEM_MODULE_NAME blk_mem_gen_inst
+`define DATA_MEM_MODULE_NAME blk_mem_gen_data
+/*********** nop **********/
+`define INST_NOP 32'b00000000000000000000000000010011
 /*********** For Opcodes Decoding ***********/
 // RV32I
 // opcodes
@@ -11,7 +16,7 @@
 `define OP_I_IMM  7'b0010011
 `define OP_I_FENCE 7'b1110011
 `define OP_I_CSR 7'b1110011
-`define OP_S 7'b0100111
+`define OP_S 7'b0100011
 `define OP_B 7'b1100011
 `define OP_J_JAL 7'b1101111
 `define OP_J_JALR 7'b1100111
@@ -55,11 +60,11 @@
 `define F3_BLTU 3'b110
 `define F3_BGEU 3'b111
 /*********** For Multiplications and Multipliers ***********/
-`define MULT_PPL_STAGE 5 //multiplier pipeline stages
+`define MULT_PPL_STAGE 6 //multiplier pipeline stages
 `define MULT_MODULE_NAME_SxS mult_gen_0 //multiplier module name for signed x signed
 `define MULT_MODULE_NAME_SxU mult_gen_1 //multiplier module name for signed x unsigned
 `define MULT_MODULE_NAME_UxU mult_gen_2 //multiplier module name for unsigned x unsigned
-`define MULT_MODULE_NAME_33x33 mult_gen_3 //multiplier module name for 33bit, 
+`define MULT_MODULE_NAME_33x33 mult_gen_33x33 //multiplier module name for 33bit, 
                             //which can implement all the 3 kinds of multiplication.
 `define MULT_TYPE_LOW32 2'b00 //multiplier type: low 32 bits
 `define MULT_TYPE_SxS_HIGH32 2'b01 //multiplier type: signed x signed, high 32 bits
@@ -67,7 +72,6 @@
 `define MULT_TYPE_UxU_HIGH32 2'b11 //multiplier type: unsigned x unsigned, high 32 bits
 /*********** For Divisions and Dividers ***********/
 `define DIV_PPL_STAGE 36 //divider pipeline stages
-`define DIV_PPL_STAGE_LOG2 6 //log2 of divider pipeline stages
 `define DIV_MODULE_NAME div_gen_0 //divider module name
 `define DIV_TYPE_SIGNED 1'b1 //divider type: signed
 `define DIV_TYPE_UNSIGNED 1'b0 //divider type: unsigned
